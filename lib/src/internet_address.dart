@@ -32,8 +32,8 @@ class InternetAddress implements io.InternetAddress {
       throw new ArgumentError('${address} is not valid.');
   }
 
-  static Future<List<InternetAddress>> lookup(String host) {
-    var completer = new Completer();
+  static Future<List<io.InternetAddress>> lookup(String host) {
+    Completer<List<io.InternetAddress>> completer = new Completer();
     var options = new DNSLookupOptions(all: true, verbatim: true);
 
     void handleLookup(error, List<DNSAddress> addresses) {

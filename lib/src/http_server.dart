@@ -7,13 +7,20 @@ import 'dart:io' as io;
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 
-import 'package:node/http.dart';
+import 'package:node/http.dart' as _http;
 import 'http_headers.dart';
 import 'internet_address.dart';
 import 'streams.dart';
 
 export 'dart:io'
-    show HttpStatus, HttpHeaders, ContentType, Cookie, HttpException;
+    show
+        HttpStatus,
+        HttpHeaders,
+        ContentType,
+        Cookie,
+        HttpException,
+        HttpRequest,
+        HttpResponse;
 
 class _HttpConnectionInfo implements io.HttpConnectionInfo {
   @override
@@ -28,24 +35,31 @@ class _HttpConnectionInfo implements io.HttpConnectionInfo {
   _HttpConnectionInfo(this.localPort, this.remoteAddress, this.remotePort);
 }
 
-class NodeHttpServer extends Stream<io.HttpRequest> implements io.HttpServer {
+abstract class HttpServer implements io.HttpServer {
+  static Future<io.HttpServer> bind(address, int port,
+          {int backlog: 0, bool v6Only: false, bool shared: false}) =>
+      _HttpServer.bind(address, port,
+          backlog: backlog, v6Only: v6Only, shared: shared);
+}
+
+class _HttpServer extends Stream<io.HttpRequest> implements HttpServer {
   @override
-  final InternetAddress address;
+  final io.InternetAddress address;
   @override
   final int port;
 
-  HttpServer _server;
-  Completer<NodeHttpServer> _listenCompleter;
+  _http.HttpServer _server;
+  Completer<io.HttpServer> _listenCompleter;
   StreamController<io.HttpRequest> _controller;
 
-  NodeHttpServer._(this.address, this.port) {
+  _HttpServer._(this.address, this.port) {
     _controller = new StreamController<io.HttpRequest>(
       onListen: _onListen,
       onPause: _onPause,
       onResume: _onResume,
       onCancel: _onCancel,
     );
-    _server = http.createServer(allowInterop(_jsRequestHandler));
+    _server = _http.http.createServer(allowInterop(_jsRequestHandler));
     _server.on('error', allowInterop(_jsErrorHandler));
   }
 
@@ -64,7 +78,8 @@ class NodeHttpServer extends Stream<io.HttpRequest> implements io.HttpServer {
     _controller.addError(error);
   }
 
-  void _jsRequestHandler(IncomingMessage request, ServerResponse response) {
+  void _jsRequestHandler(
+      _http.IncomingMessage request, _http.ServerResponse response) {
     if (_controller.isPaused) {
       // Reject any incoming request before listening started or subscription
       // is paused.
@@ -75,10 +90,10 @@ class NodeHttpServer extends Stream<io.HttpRequest> implements io.HttpServer {
     _controller.add(new NodeHttpRequest(request, response));
   }
 
-  Future<NodeHttpServer> _bind() {
+  Future<io.HttpServer> _bind() {
     assert(_server.listening == false && _listenCompleter == null);
 
-    _listenCompleter = new Completer<NodeHttpServer>();
+    _listenCompleter = new Completer<io.HttpServer>();
     void listeningHandler() {
       _listenCompleter.complete(this);
       _listenCompleter = null;
@@ -88,7 +103,7 @@ class NodeHttpServer extends Stream<io.HttpRequest> implements io.HttpServer {
     return _listenCompleter.future;
   }
 
-  static Future<NodeHttpServer> bind(address, int port,
+  static Future<io.HttpServer> bind(address, int port,
       {int backlog: 0, bool v6Only: false, bool shared: false}) async {
     assert(!shared, 'Shared is not implemented yet');
 
@@ -96,7 +111,7 @@ class NodeHttpServer extends Stream<io.HttpRequest> implements io.HttpServer {
       List<InternetAddress> list = await InternetAddress.lookup(address);
       address = list.first;
     }
-    var server = new NodeHttpServer._(address, port);
+    var server = new _HttpServer._(address, port);
     return server._bind();
   }
 
@@ -139,12 +154,12 @@ class NodeHttpServer extends Stream<io.HttpRequest> implements io.HttpServer {
 /// Node's native representations.
 class NodeHttpRequest extends ReadableStream<List<int>>
     implements io.HttpRequest {
-  final ServerResponse _nativeResponse;
+  final _http.ServerResponse _nativeResponse;
 
-  NodeHttpRequest(IncomingMessage nativeRequest, this._nativeResponse)
+  NodeHttpRequest(_http.IncomingMessage nativeRequest, this._nativeResponse)
       : super(nativeRequest, convert: (chunk) => new List.unmodifiable(chunk));
 
-  IncomingMessage get nativeInstance => super.nativeInstance;
+  _http.IncomingMessage get nativeInstance => super.nativeInstance;
 
   @override
   io.X509Certificate get certificate => throw new UnimplementedError();
@@ -235,9 +250,9 @@ class NodeHttpRequest extends ReadableStream<List<int>>
 }
 
 class NodeHttpResponse extends NodeIOSink implements io.HttpResponse {
-  NodeHttpResponse(ServerResponse nativeResponse) : super(nativeResponse);
+  NodeHttpResponse(_http.ServerResponse nativeResponse) : super(nativeResponse);
 
-  ServerResponse get nativeInstance => super.nativeInstance;
+  _http.ServerResponse get nativeInstance => super.nativeInstance;
 
   @override
   bool get bufferOutput => throw new UnimplementedError();

@@ -9,9 +9,8 @@ import 'dart:async';
 import 'package:node/node.dart';
 import 'package:node/stream.dart';
 import 'src/streams.dart';
-import 'dart:io' as io;
 
-import 'src/http_server.dart';
+export 'src/http_server.dart';
 
 int get exitCode => process.exitCode;
 
@@ -27,13 +26,6 @@ void exit([int code]) {
 }
 
 int get pid => process.pid;
-
-abstract class HttpServer implements io.HttpServer {
-  static Future<io.HttpServer> bind(address, int port,
-          {int backlog: 0, bool v6Only: false, bool shared: false}) =>
-      NodeHttpServer.bind(address, port,
-          backlog: backlog, v6Only: v6Only, shared: shared);
-}
 
 class Stdin extends ReadableStream<List<int>> implements Stream<List<int>> {
   Stdin(Readable nativeInstance) : super(nativeInstance);
