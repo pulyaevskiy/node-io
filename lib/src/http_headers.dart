@@ -3,8 +3,8 @@
 import 'dart:io' as io;
 
 import 'package:js/js_util.dart';
-import 'package:node/http.dart';
-import 'package:node/js.dart';
+import 'package:node_interop/http.dart';
+import 'package:node_interop/js.dart';
 
 /// List of HTTP header names which can only have single value.
 const _singleValueHttpHeaders = const [

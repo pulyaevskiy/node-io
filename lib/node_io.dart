@@ -6,11 +6,21 @@
 library node_io;
 
 import 'dart:async';
-import 'package:node/node.dart';
-import 'package:node/stream.dart';
+
+import 'package:node_interop/node.dart';
+import 'package:node_interop/stream.dart';
+
 import 'src/streams.dart';
 
+export 'dart:io' show FileSystemEntityType;
+
+export 'src/directory.dart';
+export 'src/file.dart';
+export 'src/file_system_entity.dart';
 export 'src/http_server.dart';
+export 'src/platform.dart';
+export 'src/internet_address.dart';
+export 'src/http_headers.dart' hide HttpHeaders;
 
 int get exitCode => process.exitCode;
 

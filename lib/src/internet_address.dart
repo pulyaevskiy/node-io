@@ -4,8 +4,8 @@ import 'dart:async';
 import 'dart:io' as io;
 
 import 'package:js/js.dart';
-import 'package:node/dns.dart';
-import 'package:node/net.dart';
+import 'package:node_interop/dns.dart';
+import 'package:node_interop/net.dart';
 
 export 'dart:io' show InternetAddressType;
 
@@ -38,7 +38,6 @@ class InternetAddress implements io.InternetAddress {
 
     void handleLookup(error, List<DNSAddress> addresses) {
       if (error != null) {
-        // TODO: dartify error
         completer.completeError(error);
       } else {
         var list = addresses

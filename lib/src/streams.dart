@@ -5,8 +5,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:js/js.dart';
 
-import 'package:node/node.dart';
-import 'package:node/stream.dart';
+import 'package:node_interop/node.dart';
+import 'package:node_interop/stream.dart';
 
 /// [Stream] wrapper around Node's [Readable] stream.
 class ReadableStream<T> extends Stream<T> {
@@ -32,7 +32,6 @@ class ReadableStream<T> extends Stream<T> {
   }
 
   void _errorHandler([JsError error]) {
-    // TODO: dartify error
     _controller.addError(error);
   }
 
@@ -90,8 +89,6 @@ class WritableStream<S> implements StreamSink<S> {
   }
 
   void _errorHandler(JsError error) {
-    // TODO: dartifyError
-    // var dartError = dartifyError(error);
     if (_drainCompleter != null && !_drainCompleter.isCompleted) {
       _drainCompleter.completeError(error);
     } else if (_closeCompleter != null && !_closeCompleter.isCompleted) {
@@ -141,7 +138,6 @@ class WritableStream<S> implements StreamSink<S> {
   @override
   void addError(Object error, [StackTrace stackTrace]) {
     // TODO: not sure if this is the right way...
-    // TODO: make sure to jsify `error`.
     nativeInstance.emit('error', error);
   }
 

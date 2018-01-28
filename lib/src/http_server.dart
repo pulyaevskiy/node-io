@@ -7,7 +7,7 @@ import 'dart:io' as io;
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 
-import 'package:node/http.dart' as _http;
+import 'package:node_interop/http.dart' as _http;
 import 'http_headers.dart';
 import 'internet_address.dart';
 import 'streams.dart';
