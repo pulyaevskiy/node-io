@@ -10,7 +10,7 @@ environment:
 dependencies:
  node_interop:
   git:
-    url: git@github.com:pulyaevskiy/node-interop.git
+    url: https://github.com/pulyaevskiy/node-interop.git
     ref: dart20
 
 dev_dependencies:
