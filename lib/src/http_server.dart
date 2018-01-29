@@ -125,8 +125,17 @@ class _HttpServer extends Stream<io.HttpRequest> implements HttpServer {
   String serverHeader; // TODO: Implement autoCompress
 
   @override
-  Future close({bool force: false}) {
-    throw new UnimplementedError();
+  Future<Null> close({bool force: false}) {
+    assert(!force, 'Force argument is not supported by Node HTTP server');
+    final Completer<Null> completer = new Completer<Null>();
+    _server.close(allowInterop(([error]) {
+      _controller.close();
+      if (error != null) {
+        completer.complete(error);
+      } else
+        completer.complete();
+    }));
+    return completer.future;
   }
 
   @override
